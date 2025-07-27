@@ -7,7 +7,6 @@ import { useNavigate } from "react-router-dom";
 import type { RootState } from "../../../redux/store";
 
 const NewProduct = () => {
-
   const { user } = useSelector((state: RootState) => state.userReducer);
   const navigate = useNavigate();
 
@@ -39,9 +38,12 @@ const NewProduct = () => {
   const submitHandler = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    if (!name || !price || stock < 0 || !category || !photo) return;
+    if (!user?._id) {
+      console.log("returning because user not foound");
+      return;
+    }
 
-    console.log({ name, price, stock, category, photo });
+    if (!name || !price || stock < 0 || !category || !photo) return;
 
     const formData = new FormData();
     formData.set("name", name);
@@ -49,8 +51,9 @@ const NewProduct = () => {
     formData.set("stock", stock.toString());
     formData.set("photo", photo);
     formData.set("category", category);
+    formData.set("description", "this is description");
 
-    const res = await newProduct({ id: user?._id!, formData });
+    const res = await newProduct({ id: user._id, formData });
 
     responseToast(res, navigate, "/admin/product");
   };
@@ -60,9 +63,7 @@ const NewProduct = () => {
       <AdminSidebar />
       <main className="product-management">
         <article>
-          <form
-            onSubmit={submitHandler}
-          >
+          <form onSubmit={submitHandler}>
             <h2>New Product</h2>
             <div>
               <label>Name</label>
@@ -94,7 +95,6 @@ const NewProduct = () => {
                 required
               />
             </div>
-
             <div>
               <label>Category</label>
               <input
@@ -105,7 +105,6 @@ const NewProduct = () => {
                 required
               />
             </div>
-
             <div>
               <label>Photo</label>
               <input required type="file" onChange={changeImageHandler} />
